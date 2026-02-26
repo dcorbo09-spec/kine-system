@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Kine System"/>
+  <meta name="theme-color" content="#0f1923"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icons/icon-192.png"/>
+  <title>Kine System</title>
+
+  <style>
+    /* ============================================================
+       VARIABLES Y RESET
+    ============================================================ */
+    :root {
+      --bg:        #0f1923;
+      --surface:   #172130;
+      --surface2:  #1e2d3f;
+      --border:    #263548;
+      --accent:    #2b8af0;
+      --accent2:   #1a6fd4;
+      --text:      #e8edf2;
+      --text2:     #8a9bb0;
+      --text3:     #4a6080;
+      --green:     #22c55e;
+      --yellow:    #f59e0b;
+      --red:       #ef4444;
+      --radius:    16px;
+      --radius-sm: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'SF Pro Display', -apple-system, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* ============================================================
+       APP SHELL
+    ============================================================ */
+    #app {
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .topbar-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .topbar-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .topbar-user {
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .btn-salir {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: none;
+    }
+
+    /* ============================================================
+       SCREENS
+    ============================================================ */
+    .screen {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .screen.active { display: flex; flex-direction: column; }
+
+    /* ============================================================
+       SCREEN: LOGIN
+    ============================================================ */
+    #screen-login {
+      justify-content: center;
+      align-items: center;
+      padding: 32px 24px;
+      gap: 0;
+    }
+
+    .login-hero {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .login-orb {
+      width: 88px;
+      height: 88px;
+      background: linear-gradient(135deg, var(--accent), #0ea5e9);
+      border-radius: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      margin: 0 auto 20px;
+      box-shadow: 0 20px 60px rgba(43, 138, 240, 0.35);
+    }
+
+    .login-title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .login-sub {
+      font-size: 14px;
+      color: var(--text2);
+    }
+
+    .login-form {
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text3);
+      margin-bottom: 8px;
+    }
+
+    .field-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 16px;
+      padding: 14px 16px;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .field-input:focus { border-color: var(--accent); }
+    .field-input::placeholder { color: var(--text3); }
+
+    .error-msg {
+      display: none;
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #fca5a5;
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 13px;
+      margin-top: 12px;
+      line-height: 1.4;
+    }
+
+    /* ============================================================
+       BOTONES
+    ============================================================ */
+    .btn-primary {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: all 0.15s;
+      letter-spacing: -0.2px;
+    }
+
+    .btn-primary:active { transform: scale(0.98); background: var(--accent2); }
+    .btn-primary:disabled { opacity: 0.5; }
+
+    .btn-ghost {
+      width: 100%;
+      background: transparent;
+      color: var(--text2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.15s;
+    }
+
+    .btn-ghost:active { background: var(--surface2); }
+
+    /* ============================================================
+       SCREEN: HOME
+    ============================================================ */
+    #screen-home { padding: 20px; gap: 12px; }
+
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 17px;
+      color: var(--text3);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 16px;
+      padding: 14px 14px 14px 44px;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: var(--text3); }
+
+    .results-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .patient-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .patient-card:active {
+      background: var(--surface2);
+      border-color: var(--accent);
+      transform: scale(0.99);
+    }
+
+    .patient-info {}
+
+    .patient-name {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 4px;
+    }
+
+    .patient-meta {
+      font-size: 12px;
+      color: var(--text2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .badge-ok      { background: rgba(34,197,94,0.15);  color: #86efac; }
+    .badge-warning { background: rgba(245,158,11,0.15); color: #fcd34d; }
+    .badge-danger  { background: rgba(239,68,68,0.15);  color: #fca5a5; }
+
+    .chevron { color: var(--text3); font-size: 18px; }
+
+    .no-results {
+      text-align: center;
+      padding: 32px 20px;
+      color: var(--text2);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .btn-nuevo {
+      background: var(--surface);
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius);
+      color: var(--text2);
+      padding: 16px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-nuevo:active { border-color: var(--accent); color: var(--accent); }
+
+    /* ============================================================
+       SCREEN: REGISTRO
+    ============================================================ */
+    #screen-registro { padding: 20px; gap: 14px; }
+
+    .reg-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .reg-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .reg-name {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+    }
+
+    .reg-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .reg-item label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text3);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .reg-item span {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .sesiones-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface2);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      margin-top: 12px;
+    }
+
+    .ses-label { font-size: 12px; color: var(--text2); }
+
+    .ses-count {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .ses-count span {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text3);
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 4px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: var(--accent);
+      transition: width 0.4s;
+    }
+
+    .progress-fill.warn   { background: var(--yellow); }
+    .progress-fill.danger { background: var(--red); }
+
+    .alerta-box {
+      display: none;
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 13px;
+      color: #fcd34d;
+      line-height: 1.4;
+    }
+
+    .alerta-box.danger {
+      background: rgba(239,68,68,0.1);
+      border-color: rgba(239,68,68,0.3);
+      color: #fca5a5;
+    }
+
+    .ultima-sesion-box {
+      background: var(--surface2);
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--accent);
+      padding: 12px 14px;
+      font-size: 12px;
+      color: var(--text2);
+      line-height: 1.5;
+    }
+
+    .ultima-sesion-box strong {
+      color: var(--text);
+      display: block;
+      margin-bottom: 2px;
+      font-size: 13px;
+    }
+
+    .form-section { display: flex; flex-direction: column; gap: 6px; }
+
+    .field-select {
+      width: 100%;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 15px;
+      padding: 14px 16px;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234a6080' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      cursor: pointer;
+    }
+
+    .field-select:focus { border-color: var(--accent); }
+
+    .estado-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .estado-btn {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text2);
+      padding: 12px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      line-height: 1.4;
+      transition: all 0.15s;
+    }
+
+    .estado-btn .emoji { display: block; font-size: 20px; margin-bottom: 4px; }
+    .estado-btn:active { transform: scale(0.96); }
+
+    .estado-btn.selected {
+      background: rgba(43,138,240,0.15);
+      border-color: var(--accent);
+      color: #93c5fd;
+    }
+
+    .field-textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 15px;
+      padding: 14px 16px;
+      outline: none;
+      resize: none;
+      height: 80px;
+      font-family: inherit;
+      -webkit-appearance: none;
+    }
+
+    .field-textarea:focus { border-color: var(--accent); }
+    .field-textarea::placeholder { color: var(--text3); }
+
+    .actions-bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-bottom: 32px;
+    }
+
+    /* ============================================================
+       SCREEN: ÉXITO
+    ============================================================ */
+    #screen-exito {
+      justify-content: center;
+      align-items: center;
+      padding: 32px 24px;
+      text-align: center;
+      gap: 16px;
+    }
+
+    .exito-orb {
+      width: 88px;
+      height: 88px;
+      background: rgba(34,197,94,0.15);
+      border: 2px solid rgba(34,197,94,0.4);
+      border-radius: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes pop {
+      from { transform: scale(0.4); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .exito-titulo {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--green);
+    }
+
+    .exito-detalle {
+      font-size: 15px;
+      color: var(--text2);
+      line-height: 1.6;
+      max-width: 280px;
+    }
+
+    /* ============================================================
+       SCREEN: NUEVO PACIENTE
+    ============================================================ */
+    #screen-nuevo { padding: 20px; gap: 12px; padding-bottom: 48px; }
+
+    .section-divider {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--text3);
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border);
+      margin-top: 4px;
+    }
+
+    /* ============================================================
+       LOADING
+    ============================================================ */
+    .loading-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 20px;
+      gap: 14px;
+      color: var(--text2);
+      font-size: 14px;
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 2.5px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ============================================================
+       SCROLLBAR
+    ============================================================ */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-icon">🦴</div>
+      <div>
+        <div class="topbar-title">Kine System</div>
+        <div class="topbar-user" id="topbar-user" style="display:none"></div>
+      </div>
+    </div>
+    <button class="btn-salir" id="btn-salir">Salir</button>
+  </div>
+
+  <!-- ============================================================
+       SCREEN: LOGIN
+  ============================================================ -->
+  <div class="screen active" id="screen-login">
+    <div class="login-hero">
+      <div class="login-orb">🏥</div>
+      <div class="login-title">Kine System</div>
+      <div class="login-sub">Ingresá con tu email del consultorio</div>
+    </div>
+    <div class="login-form">
+      <label class="field-label" for="login-email">Email</label>
+      <input
+        type="email"
+        id="login-email"
+        class="field-input"
+        placeholder="tu@email.com"
+        autocomplete="email"
+        inputmode="email"
+      />
+      <div class="error-msg" id="login-error"></div>
+      <button class="btn-primary" id="btn-ingresar">Ingresar →</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SCREEN: HOME
+  ============================================================ -->
+  <div class="screen" id="screen-home">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        id="search-input"
+        class="search-input"
+        placeholder="Buscá por apellido o DNI..."
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+      />
+    </div>
+    <div id="results-container"></div>
+    <button class="btn-nuevo" id="btn-nuevo-paciente">
+      ➕ Registrar nuevo paciente
+    </button>
+  </div>
+
+  <!-- ============================================================
+       SCREEN: REGISTRO
+  ============================================================ -->
+  <div class="screen" id="screen-registro">
+
+    <div class="reg-card" id="reg-card-paciente"></div>
+
+    <div class="alerta-box" id="alerta-sesiones"></div>
+
+    <div id="ultima-sesion-container"></div>
+
+    <div class="form-section">
+      <label class="field-label">Tratamiento realizado *</label>
+      <select class="field-select" id="select-tratamiento">
+        <option value="">Seleccioná un tratamiento...</option>
+      </select>
+    </div>
+
+    <div class="form-section">
+      <label class="field-label">Estado del paciente *</label>
+      <div class="estado-grid">
+        <button class="estado-btn" data-estado="PRIMERA_SESION">
+          <span class="emoji">🆕</span>1ra sesión
+        </button>
+        <button class="estado-btn" data-estado="MEJORA">
+          <span class="emoji">📈</span>Mejora
+        </button>
+        <button class="estado-btn" data-estado="IGUAL">
+          <span class="emoji">➡️</span>Sin cambios
+        </button>
+        <button class="estado-btn" data-estado="DOLOR">
+          <span class="emoji">😣</span>Dolor
+        </button>
+        <button class="estado-btn" data-estado="REAGUDIZACION">
+          <span class="emoji">⚠️</span>Reagudización
+        </button>
+        <button class="estado-btn" data-estado="ALTA">
+          <span class="emoji">✅</span>Alta
+        </button>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <label class="field-label">Nota de sesión (opcional)</label>
+      <textarea
+        id="nota-sesion"
+        class="field-textarea"
+        placeholder="Observaciones breves..."
+        maxlength="150"
+      ></textarea>
+    </div>
+
+    <div class="actions-bottom">
+      <button class="btn-primary" id="btn-confirmar" disabled>
+        ✓ CONFIRMAR ATENCIÓN
+      </button>
+      <button class="btn-ghost" id="btn-volver">← Volver</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SCREEN: ÉXITO
+  ============================================================ -->
+  <div class="screen" id="screen-exito">
+    <div class="exito-orb">✅</div>
+    <div class="exito-titulo">¡Atención registrada!</div>
+    <div class="exito-detalle" id="exito-detalle"></div>
+    <div id="exito-alerta"></div>
+    <button class="btn-primary" id="btn-otra">Registrar otra atención</button>
+  </div>
+
+  <!-- ============================================================
+       SCREEN: NUEVO PACIENTE
+  ============================================================ -->
+  <div class="screen" id="screen-nuevo">
+    <div class="section-divider">Datos obligatorios</div>
+
+    <div class="form-section">
+      <label class="field-label">Apellido *</label>
+      <input type="text" class="field-input" id="np-apellido" placeholder="García" autocomplete="off"/>
+    </div>
+    <div class="form-section">
+      <label class="field-label">Nombre *</label>
+      <input type="text" class="field-input" id="np-nombre" placeholder="Juan" autocomplete="off"/>
+    </div>
+    <div class="form-section">
+      <label class="field-label">DNI *</label>
+      <input type="text" class="field-input" id="np-dni" placeholder="30123456" inputmode="numeric"/>
+    </div>
+    <div class="form-section">
+      <label class="field-label">Obra Social *</label>
+      <input type="text" class="field-input" id="np-os" placeholder="OSDE, PAMI, Particular..."/>
+    </div>
+    <div class="form-section">
+      <label class="field-label">Sesiones autorizadas *</label>
+      <input type="number" class="field-input" id="np-sesiones" placeholder="10" inputmode="numeric"/>
+    </div>
+
+    <div class="section-divider">Datos complementarios</div>
+
+    <div class="form-section">
+      <label class="field-label">Nro. de afiliado</label>
+      <input type="text" class="field-input" id="np-afiliado" placeholder="Opcional"/>
+    </div>
+    <div class="form-section">
+      <label class="field-label">Plan OS</label>
+      <input type="text" class="field-input" id="np-plan" placeholder="210, Premium..."/>
+    </div>
+    <div class="form-section">
+      <label class="field-label">Médico derivante</label>
+      <input type="text" class="field-input" id="np-medico" placeholder="Dr. Apellido"/>
+    </div>
+    <div class="form-section">
+      <label class="field-label">Diagnóstico</label>
+      <input type="text" class="field-input" id="np-diagnostico" placeholder="Descripción breve"/>
+    </div>
+    <div class="form-section">
+      <label class="field-label">Teléfono</label>
+      <input type="text" class="field-input" id="np-telefono" placeholder="1123456789" inputmode="numeric"/>
+    </div>
+
+    <div class="actions-bottom">
+      <button class="btn-primary" id="btn-guardar-nuevo">✓ Guardar paciente</button>
+      <button class="btn-ghost" id="btn-cancelar-nuevo">← Cancelar</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
